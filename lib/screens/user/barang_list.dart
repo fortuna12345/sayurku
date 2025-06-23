@@ -268,7 +268,7 @@ class _BarangListScreenState extends State<BarangListScreen> {
                   // ),
                   const SizedBox(height: 8),
                   Text(
-                    currencyFormatter.format(barang.harga),
+                    '${currencyFormatter.format(barang.harga)} / ${barang.satuan ?? ''}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,

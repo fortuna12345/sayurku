@@ -183,7 +183,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(user.nama, style: textTheme.headlineSmall),
           Text(
-            user.email,
+            user.email ?? 'Tidak ada email',
             style: textTheme.bodyMedium?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 32),

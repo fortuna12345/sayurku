@@ -1,14 +1,20 @@
 import 'package:sayurku/models/barang_model.dart';
+import 'package:sayurku/models/user_model.dart';
 
 class Order {
-  final int id; // Diubah dari String ke int
+  final int id;
   final String idUser;
   final double harga;
   final String metodePembayaran;
   final String status;
   final DateTime createdAt;
   final List<OrderDetail>? orderDetails;
-  final String? fotoPembayaran; // Kolom baru ditambahkan
+  final String? fotoPembayaran;
+  final double? latitude;
+  final double? longitude;
+  final String? alamatCatatan;
+  final String? catatanPesanan;
+  final UserModel? user;
 
   Order({
     required this.id,
@@ -18,43 +24,55 @@ class Order {
     required this.status,
     required this.createdAt,
     this.orderDetails,
-    this.fotoPembayaran, // Ditambahkan di constructor
+    this.fotoPembayaran,
+    this.latitude,
+    this.longitude,
+    this.alamatCatatan,
+    this.catatanPesanan,
+    this.user,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
-      id: json['id'], // Tipe data sudah int
+      id: json['id'],
       idUser: json['id_user'].toString(),
       harga: json['harga'].toDouble(),
       metodePembayaran: json['metode_pembayaran'],
       status: json['status'],
       createdAt: DateTime.parse(json['created_at']),
-      fotoPembayaran: json['foto_pembayaran'], // Ditambahkan
+      fotoPembayaran: json['foto_pembayaran'],
       orderDetails:
           json['order_detail'] != null
               ? (json['order_detail'] as List)
                   .map((detail) => OrderDetail.fromJson(detail))
                   .toList()
               : null,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      alamatCatatan: json['catatan_alamat'],
+      catatanPesanan: json['catatan_pesanan'],
+      user: json['users'] != null ? UserModel.fromJson(json['users']) : null,
     );
   }
 
-  // toJson tidak perlu diubah karena data ini dikirim ke RPC
-  // yang di-handle di service
   Map<String, dynamic> toJson() {
     return {
       'id_user': idUser,
       'harga': harga,
       'metode_pembayaran': metodePembayaran,
       'status': status,
+      'latitude': latitude,
+      'longitude': longitude,
+      'catatan_alamat': alamatCatatan,
+      'catatan_pesanan': catatanPesanan,
     };
   }
 }
 
 class OrderDetail {
-  final int id; // Diubah dari String ke int
-  final int idOrder; // Diubah dari String ke int
-  final int idBarang; // Diubah dari String ke int
+  final int id;
+  final int idOrder;
+  final int idBarang;
   final int jumlah;
   final double subtotal;
   final Barang? barang;

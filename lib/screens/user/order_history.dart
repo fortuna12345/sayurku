@@ -5,6 +5,7 @@ import 'package:sayurku/services/order_service.dart';
 import 'package:sayurku/widgets/order_card.dart';
 import 'package:sayurku/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:sayurku/screens/shared/order_detail_screen.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -34,11 +35,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
       _orders = await _orderService.getUserOrders(user.id);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load orders: ${e.toString()}')),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -72,9 +76,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         padding: const EdgeInsets.all(16.0),
         itemCount: _orders.length,
         itemBuilder: (context, index) {
+          final order = _orders[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 12.0),
-            child: OrderCard(order: _orders[index]),
+            child: OrderCard(order: _orders[index],onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OrderDetailScreen(order: order),
+                  ),
+                );
+              },),
           );
         },
       ),

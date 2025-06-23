@@ -11,9 +11,11 @@ import 'package:sayurku/screens/admin/admin_home.dart';
 import 'package:sayurku/screens/user/home_screen.dart';
 import 'package:sayurku/utils/theme.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+   await initializeDateFormatting('id_ID', null);
 
   // Muat environment variables dari file .env
   await dotenv.load(fileName: ".env");

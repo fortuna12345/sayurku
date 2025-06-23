@@ -19,6 +19,7 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
   late TextEditingController _nameController;
   late TextEditingController _priceController;
   late TextEditingController _descriptionController;
+  late TextEditingController _unitController;
 
   Kategori? _selectedKategori;
   late Future<List<Kategori>> _kategoriFuture;
@@ -39,6 +40,7 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
     _descriptionController = TextEditingController(
       text: widget.barang?.deskripsi,
     );
+    _unitController = TextEditingController(text: widget.barang?.satuan);
     _kategoriFuture = widget.barangService.getCategories();
 
     if (_isEditing) {
@@ -51,6 +53,7 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
     _nameController.dispose();
     _priceController.dispose();
     _descriptionController.dispose();
+    _unitController.dispose();
     super.dispose();
   }
 
@@ -85,6 +88,7 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
         'harga': double.parse(_priceController.text),
         'deskripsi': _descriptionController.text,
         'id_kategori': _selectedKategori!.id,
+        'satuan': _unitController.text,
       };
 
       try {
@@ -151,6 +155,14 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
                     return 'Masukkan angka yang valid';
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _unitController,
+                decoration: const InputDecoration(
+                  labelText: 'Satuan (e.g., kg, ikat, buah)',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 16),
               _buildCategoryDropdown(),

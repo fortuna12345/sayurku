@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:sayurku/models/cart_model.dart';
+import 'package:sayurku/screens/user/map_picker_screen.dart';
 import 'package:sayurku/screens/user/payment_screen.dart';
 import 'package:sayurku/services/auth_service.dart';
 import 'package:sayurku/services/order_service.dart';
@@ -18,8 +20,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _notesController = TextEditingController();
+  final _addressNotesController = TextEditingController();
+  final _orderNotesController = TextEditingController();
+  LatLng? _deliveryLocation;
   String _paymentMethod = 'Transfer';
   bool _isLoading = false;
+
+  // Lokasi Toko (Hardcoded)
+  final LatLng _storeLocation = const LatLng(-6.175110, 106.661995);
+
+  double _calculateDistance() {
+    if (_deliveryLocation == null) return 0.0;
+    const distance = Distance();
+    return distance.as(
+        LengthUnit.Kilometer, _storeLocation, _deliveryLocation!);
+  }
 
   @override
   void initState() {
@@ -32,7 +47,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (currentUser != null) {
         _nameController.text = currentUser.nama;
-        _phoneController.text = currentUser.no_telepon;
+        _phoneController.text = currentUser.no_telepon!;
       }
     });
   }
@@ -75,6 +90,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'harga': cart.totalPrice,
         'metode_pembayaran': _paymentMethod,
         'status': 'pending',
+        'latitude': _deliveryLocation?.latitude,
+        'longitude': _deliveryLocation?.longitude,
+        'alamatCatatan': _addressNotesController.text,
+        'catatanPesanan': _orderNotesController.text,
       };
 
       final orderDetails =
@@ -154,28 +173,59 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ? 'Masukkan nomor telepon Anda'
                             : null,
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Alamat Pengiriman',
-                ),
-                maxLines: 3,
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Masukkan alamat Anda'
-                            : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Catatan Pesanan (Opsional)',
-                ),
-                maxLines: 2,
-              ),
               const SizedBox(height: 24),
+            const Text('Alamat Pengiriman', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+
+            // Bagian Peta
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () async {
+                  final result = await Navigator.of(context).push<LatLng>(
+                    MaterialPageRoute(
+                      builder: (context) => MapPickerScreen(initialLocation: _deliveryLocation),
+                    ),
+                  );
+                  if (result != null) {
+                    setState(() {
+                      _deliveryLocation = result;
+                    });
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.map, color: Theme.of(context).primaryColor, size: 40),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          _deliveryLocation == null
+                              ? 'Ketuk untuk memilih lokasi di peta'
+                              : 'Lokasi telah dipilih!\nJarak: ${_calculateDistance().toStringAsFixed(2)} km',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Catatan Alamat
+            TextFormField(
+              controller: _addressNotesController,
+              decoration: const InputDecoration(
+                labelText: 'Catatan Alamat (Opsional)',
+                hintText: 'Contoh: Rumah warna hijau, depan taman',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 24),
               Text(
                 'Metode Pembayaran',
                 style: Theme.of(context).textTheme.titleLarge,
@@ -233,11 +283,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+             // Catatan Pesanan
+            TextFormField(
+              controller: _orderNotesController,
+              decoration: const InputDecoration(
+                labelText: 'Catatan Pesanan (Opsional)',
+                hintText: 'Contoh: Tolong pilihkan sayur yang segar',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _placeOrder,
+                  onPressed: _isLoading || _deliveryLocation == null ? null : _placeOrder,
                   child:
                       _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)

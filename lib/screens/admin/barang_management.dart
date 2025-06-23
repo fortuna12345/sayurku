@@ -169,7 +169,7 @@ class _BarangManagementScreenState extends State<BarangManagementScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${currencyFormatter.format(barang.harga)}\nKategori: ${barang.kategori?.namaKategori ?? 'N/A'}',
+                      '${currencyFormatter.format(barang.harga)} / ${barang.satuan ?? ''}\nKategori: ${barang.kategori?.namaKategori ?? 'N/A'}',
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,

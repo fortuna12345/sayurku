@@ -4,6 +4,7 @@ import 'package:sayurku/services/order_service.dart';
 import 'package:sayurku/widgets/order_card.dart';
 import 'package:sayurku/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:sayurku/screens/shared/order_detail_screen.dart';
 
 class OrderManagementScreen extends StatefulWidget {
   const OrderManagementScreen({super.key});
@@ -94,16 +95,18 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
             padding: const EdgeInsets.all(16.0),
             child: DropdownButtonFormField<String>(
               value: _filterStatus,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: 'Filter berdasarkan status',
+                border: OutlineInputBorder()
+              ),
               items: const [
                 DropdownMenuItem(value: 'all', child: Text('Semua Pesanan')),
-                DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                DropdownMenuItem(
-                  value: 'processing',
-                  child: Text('Processing'),
-                ),
-                DropdownMenuItem(value: 'completed', child: Text('Completed')),
-                DropdownMenuItem(value: 'cancelled', child: Text('Cancelled')),
+                DropdownMenuItem(value: 'pending', child: Text('Menunggu Pembayaran')),
+                DropdownMenuItem(value: 'processing', child: Text('Sedang Diproses')),
+                DropdownMenuItem(value: 'packing', child: Text('Sedang Dikemas')),
+                DropdownMenuItem(value: 'delivering', child: Text('Sedang Diantar')),
+                DropdownMenuItem(value: 'completed', child: Text('Selesai')),
+                DropdownMenuItem(value: 'cancelled', child: Text('Dibatalkan')),
               ],
               onChanged: (value) {
                 if (value != null) {
@@ -125,10 +128,17 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                           return OrderCard(
                             order: order,
                             isAdmin: true,
-                            // Pemanggilan fungsi sekarang sudah benar
                             onStatusChanged: (newStatus) {
                               _updateOrderStatus(order.id, newStatus);
                             },
+                            onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => OrderDetailScreen(order: order),
+                              ),
+                            );
+                          },
                           );
                         },
                       ),

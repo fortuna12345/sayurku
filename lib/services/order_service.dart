@@ -8,15 +8,25 @@ class OrderService {
   Future<List<Order>> getAllOrders() async {
     final response = await _client
         .from('orders')
-        .select('*, order_detail(*, barang(*))')
+        .select('*, users(*), order_detail(*, barang(*))')
         .order('created_at', ascending: false);
     return (response as List).map((json) => Order.fromJson(json)).toList();
+  }
+
+  // Metode baru untuk mengambil satu pesanan berdasarkan ID
+  Future<Order> getOrderById(int orderId) async {
+    final response = await _client
+        .from('orders')
+        .select('*, users(*), order_detail(*, barang(*))')
+        .eq('id', orderId)
+        .single(); // .single() untuk mendapatkan satu baris data
+    return Order.fromJson(response);
   }
 
   Future<List<Order>> getUserOrders(String userId) async {
     final response = await _client
         .from('orders')
-        .select('*, order_detail(*, barang(*))')
+        .select('*, users(*), order_detail(*, barang(*))')
         .eq('id_user', userId)
         .order('created_at', ascending: false);
     return (response as List).map((json) => Order.fromJson(json)).toList();

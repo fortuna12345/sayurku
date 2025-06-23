@@ -7,10 +7,20 @@ class ReportService {
   Future<List<MonthlyReport>> getMonthlyReports(int year) async {
     final response = await _client.rpc(
       'get_monthly_reports',
-      params: {'year': year},
+      params: {'p_year': year},
     );
     return (response as List)
         .map((json) => MonthlyReport.fromJson(json))
+        .toList();
+  }
+
+  Future<List<DailyReport>> getDailyReports(int year, int month) async {
+    final response = await _client.rpc(
+      'get_daily_reports',
+      params: {'p_year': year, 'p_month': month},
+    );
+    return (response as List)
+        .map((json) => DailyReport.fromJson(json))
         .toList();
   }
 }

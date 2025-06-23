@@ -6,6 +6,7 @@ class Barang {
   final String? gambar;
   final int? idKategori;
   final Kategori? kategori;
+  final String? satuan;
 
   Barang({
     required this.id,
@@ -15,6 +16,7 @@ class Barang {
     this.gambar,
     required this.idKategori,
     this.kategori,
+    this.satuan,
   });
 
   factory Barang.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class Barang {
       // Cek apakah data kategori di-join atau tidak
       kategori:
           json['kategori'] != null ? Kategori.fromJson(json['kategori']) : null,
+      satuan: json['satuan'],
     );
   }
 
@@ -38,6 +41,7 @@ class Barang {
       'deskripsi': deskripsi,
       'gambar': gambar,
       'id_kategori': idKategori,
+      'satuan': satuan,
     };
   }
 }
