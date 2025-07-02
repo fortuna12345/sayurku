@@ -8,12 +8,15 @@ class Order {
   final String metodePembayaran;
   final String status;
   final DateTime createdAt;
+  final String metodePengiriman;
   final List<OrderDetail>? orderDetails;
   final String? fotoPembayaran;
   final double? latitude;
   final double? longitude;
   final String? alamatCatatan;
   final String? catatanPesanan;
+  final DateTime? waktuPickup;
+  final double? ongkir;
   final UserModel? user;
 
   Order({
@@ -23,12 +26,15 @@ class Order {
     required this.metodePembayaran,
     required this.status,
     required this.createdAt,
+    required this.metodePengiriman,
     this.orderDetails,
     this.fotoPembayaran,
     this.latitude,
     this.longitude,
     this.alamatCatatan,
     this.catatanPesanan,
+    this.waktuPickup,
+    this.ongkir,
     this.user,
   });
 
@@ -51,6 +57,11 @@ class Order {
       longitude: (json['longitude'] as num?)?.toDouble(),
       alamatCatatan: json['catatan_alamat'],
       catatanPesanan: json['catatan_pesanan'],
+      metodePengiriman: json['metode_pengiriman'],
+      waktuPickup: json['waktu_pickup'] != null
+          ? DateTime.parse(json['waktu_pickup'])
+          : null,
+      ongkir: (json['ongkir'] as num?)?.toDouble(),
       user: json['users'] != null ? UserModel.fromJson(json['users']) : null,
     );
   }

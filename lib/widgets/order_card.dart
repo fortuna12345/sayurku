@@ -25,6 +25,8 @@ class OrderCard extends StatelessWidget {
         return Colors.blue.shade700;
       case 'packing':
         return Colors.purple.shade700;
+      case 'ready_for_pickup':
+        return Colors.cyan.shade700;
       case 'delivering':
         return Colors.teal.shade700;
       case 'completed':
@@ -45,6 +47,8 @@ class OrderCard extends StatelessWidget {
         return 'Sedang Diproses';
       case 'packing':
         return 'Sedang Dikemas';
+      case 'ready_for_pickup':
+        return 'Siap Diambil';
       case 'delivering':
         return 'Sedang Diantar';
       case 'completed':
@@ -72,6 +76,13 @@ class OrderCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Icon(
+                    order.metodePengiriman == 'delivery'
+                        ? Icons.local_shipping
+                        : Icons.store,
+                    color: Colors.grey,
+                    size: 16,
+                  ),
                   Text(
                     'Order #${order.id}',
                     style: const TextStyle(
@@ -114,6 +125,13 @@ class OrderCard extends StatelessWidget {
                       selected: order.status == 'packing',
                       onSelected: (selected) {
                         if (selected) onStatusChanged!('packing');
+                      },
+                    ),
+                    ChoiceChip(
+                      label: const Text('Siap Diambil'),
+                      selected: order.status == 'ready_for_pickup',
+                      onSelected: (selected) {
+                        if (selected) onStatusChanged!('ready_for_pickup');
                       },
                     ),
                     ChoiceChip(

@@ -104,6 +104,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                 DropdownMenuItem(value: 'pending', child: Text('Menunggu Pembayaran')),
                 DropdownMenuItem(value: 'processing', child: Text('Sedang Diproses')),
                 DropdownMenuItem(value: 'packing', child: Text('Sedang Dikemas')),
+                DropdownMenuItem(value: 'ready_for_pickup', child: Text('Siap Diambil')),
                 DropdownMenuItem(value: 'delivering', child: Text('Sedang Diantar')),
                 DropdownMenuItem(value: 'completed', child: Text('Selesai')),
                 DropdownMenuItem(value: 'cancelled', child: Text('Dibatalkan')),

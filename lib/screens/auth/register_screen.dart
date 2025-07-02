@@ -99,6 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       labelText: 'No. Telepon',
                       prefixIcon: Icon(Icons.phone),
                     ),
+                    keyboardType: TextInputType.phone,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your phone number';

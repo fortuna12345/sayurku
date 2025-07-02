@@ -12,10 +12,20 @@ class CartItem {
 
 class Cart extends ChangeNotifier {
   final List<CartItem> _items = [];
+  double _shippingCost = 0.0;
 
   List<CartItem> get items => _items;
   int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
-  double get totalPrice => _items.fold(0, (sum, item) => sum + item.subtotal);
+  double get itemsPrice => _items.fold(0, (sum, item) => sum + item.subtotal);
+  double get shippingCost => _shippingCost;
+  
+  // Total harga adalah harga barang + ongkos kirim
+  double get totalPrice => itemsPrice + _shippingCost;
+
+  void setShippingCost(double cost) {
+    _shippingCost = cost;
+    notifyListeners();
+  }
 
   void addItem(Barang barang) {
     final index = _items.indexWhere((item) => item.barang.id == barang.id);
@@ -44,6 +54,7 @@ class Cart extends ChangeNotifier {
 
   void clear() {
     _items.clear();
+    _shippingCost = 0.0; // Reset ongkir saat keranjang dibersihkan
     // Memberi tahu listener agar UI diperbarui
     notifyListeners();
   }

@@ -27,29 +27,72 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   }
 
   Future<void> _getCurrentLocation() async {
+    // Menampilkan indikator loading untuk memberikan feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Mencari lokasi Anda...')),
+    );
+
     try {
+      // 1. Cek apakah layanan lokasi (GPS) aktif
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        // Handle service tidak aktif
+        // Handle jika GPS tidak aktif
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Layanan lokasi tidak aktif. Silakan aktifkan GPS Anda.')),
+          );
+        }
         return;
       }
 
+      // 2. Cek dan minta izin lokasi
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          // Handle izin ditolak
+          // Handle jika pengguna menolak izin
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Izin lokasi ditolak.')),
+            );
+          }
           return;
         }
       }
 
-      final position = await Geolocator.getCurrentPosition();
-      setState(() {
-        _selectedLocation = LatLng(position.latitude, position.longitude);
-        _mapController.move(_selectedLocation!, 15.0);
-      });
+      if (permission == LocationPermission.deniedForever) {
+        // Handle jika pengguna menolak izin secara permanen
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Izin lokasi ditolak permanen. Silakan ubah di pengaturan aplikasi.'),
+              duration: Duration(seconds: 5),
+            ),
+          );
+        }
+        return;
+      }
+
+      // 3. Ambil posisi saat ini jika semua pengecekan berhasil
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      
+      if (mounted) {
+        setState(() {
+          _selectedLocation = LatLng(position.latitude, position.longitude);
+          _mapController.move(_selectedLocation!, 15.0);
+        });
+        ScaffoldMessenger.of(context).hideCurrentSnackBar(); // Sembunyikan pesan "Mencari lokasi..."
+      }
+
     } catch (e) {
-      // Handle error
+      // Handle error lainnya yang mungkin terjadi
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mendapatkan lokasi: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -58,12 +101,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pilih Lokasi Pengiriman'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.my_location),
-            onPressed: _getCurrentLocation,
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.my_location),
+        //     onPressed: _getCurrentLocation,
+        //   ),
+        // ],
       ),
       body: Stack(
         children: [
