@@ -20,6 +20,7 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
   late TextEditingController _priceController;
   late TextEditingController _descriptionController;
   late TextEditingController _unitController;
+  late TextEditingController _stockController;
 
   Kategori? _selectedKategori;
   late Future<List<Kategori>> _kategoriFuture;
@@ -41,6 +42,9 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
       text: widget.barang?.deskripsi,
     );
     _unitController = TextEditingController(text: widget.barang?.satuan);
+    _stockController = TextEditingController(
+      text: widget.barang?.stok.toString() ?? '0',
+    );
     _kategoriFuture = widget.barangService.getCategories();
 
     if (_isEditing) {
@@ -54,6 +58,7 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
     _priceController.dispose();
     _descriptionController.dispose();
     _unitController.dispose();
+    _stockController.dispose();
     super.dispose();
   }
 
@@ -89,6 +94,7 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
         'deskripsi': _descriptionController.text,
         'id_kategori': _selectedKategori!.id,
         'satuan': _unitController.text,
+        'stok': int.tryParse(_stockController.text) ?? 0,
       };
 
       try {
@@ -163,6 +169,24 @@ class _BarangFormDialogState extends State<BarangFormDialog> {
                   labelText: 'Satuan (e.g., kg, ikat, buah)',
                   border: OutlineInputBorder(),
                 ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _stockController, // Field baru untuk stok
+                decoration: const InputDecoration(
+                  labelText: 'Jumlah Stok',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Stok tidak boleh kosong';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Masukkan angka yang valid';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               _buildCategoryDropdown(),

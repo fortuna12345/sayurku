@@ -36,13 +36,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   DateTime? _selectedPickupTime;
 
   // Lokasi Toko (Hardcoded)
-  final LatLng _storeLocation = const LatLng(-6.201375979080287, 106.57321597183606);
+  final LatLng _storeLocation = const LatLng(
+    -6.201375979080287,
+    106.57321597183606,
+  );
 
   double _calculateDistance() {
     if (_deliveryLocation == null) return 0.0;
     const distance = Distance();
     return distance.as(
-        LengthUnit.Kilometer, _storeLocation, _deliveryLocation!);
+      LengthUnit.Kilometer,
+      _storeLocation,
+      _deliveryLocation!,
+    );
   }
 
   void _updateShippingCost() {
@@ -57,10 +63,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Future<void> _launchMapsUrl(LatLng location) async {
-    final url = 'https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}';
-    if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+    final url =
+        'https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}';
+    if (!await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    )) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tidak dapat membuka peta untuk lokasi: ${location.latitude}, ${location.longitude}')),
+        SnackBar(
+          content: Text(
+            'Tidak dapat membuka peta untuk lokasi: ${location.latitude}, ${location.longitude}',
+          ),
+        ),
       );
     }
   }
@@ -82,7 +96,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (time == null) return;
 
     setState(() {
-      _selectedPickupTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _selectedPickupTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
     });
   }
 
@@ -119,12 +139,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _placeOrder() async {
     // Validasi input
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     if (_method == FulfillmentMethod.delivery && _deliveryLocation == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Silakan pilih lokasi pengiriman.'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan pilih lokasi pengiriman.'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
     if (_method == FulfillmentMethod.pickup && _selectedPickupTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Silakan pilih waktu pengambilan.'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan pilih waktu pengambilan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -146,21 +179,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       final orderData = {
         'id_user': userId,
-        'harga': cart.totalPrice, // Total harga sudah termasuk ongkir dari Cart model
+        'harga':
+            cart.totalPrice, // Total harga sudah termasuk ongkir dari Cart model
         'metode_pembayaran': _paymentMethod,
         'status': 'pending',
         'metode_pengiriman': _method.name, // 'delivery' atau 'pickup'
-        'ongkir': _method == FulfillmentMethod.delivery ? cart.shippingCost : null,
+        'ongkir':
+            _method == FulfillmentMethod.delivery ? cart.shippingCost : null,
         'latitude': _deliveryLocation?.latitude,
         'longitude': _deliveryLocation?.longitude,
-        'alamat_catatan': _addressNotesController.text,
+        'catatan_alamat': _addressNotesController.text,
         'catatan_pesanan': _orderNotesController.text,
-        'waktu_pickup': _method == FulfillmentMethod.pickup ? _selectedPickupTime?.toIso8601String() : null,
+        'waktu_pickup':
+            _method == FulfillmentMethod.pickup
+                ? _selectedPickupTime?.toIso8601String()
+                : null,
+        'created_at': DateTime.now().toIso8601String(),
       };
 
-      final orderDetails = cart.items.map((item) => {
-        'id_barang': item.barang.id, 'jumlah': item.quantity, 'subtotal': item.subtotal,
-      }).toList();
+      final orderDetails =
+          cart.items
+              .map(
+                (item) => {
+                  'id_barang': item.barang.id,
+                  'jumlah': item.quantity,
+                  'subtotal': item.subtotal,
+                },
+              )
+              .toList();
 
       final newOrder = await orderService.createOrder(orderData, orderDetails);
       cart.clear();
@@ -168,7 +214,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PaymentScreen(order: newOrder)),
+          MaterialPageRoute(
+            builder: (context) => PaymentScreen(order: newOrder),
+          ),
         );
       }
     } catch (e) {
@@ -196,15 +244,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               // Pilihan Metode: Pickup atau Delivery
               SegmentedButton<FulfillmentMethod>(
                 segments: const [
-                  ButtonSegment(value: FulfillmentMethod.delivery, label: Text('Delivery'), icon: Icon(Icons.local_shipping)),
-                  ButtonSegment(value: FulfillmentMethod.pickup, label: Text('Pickup'), icon: Icon(Icons.store)),
+                  ButtonSegment(
+                    value: FulfillmentMethod.delivery,
+                    label: Text('Delivery'),
+                    icon: Icon(Icons.local_shipping),
+                  ),
+                  ButtonSegment(
+                    value: FulfillmentMethod.pickup,
+                    label: Text('Pickup'),
+                    icon: Icon(Icons.store),
+                  ),
                 ],
                 selected: {_method},
                 onSelectionChanged: (newSelection) {
                   setState(() {
                     _method = newSelection.first;
                     // Jika beralih ke Delivery & sebelumnya COD, reset pembayaran
-                    if (_method == FulfillmentMethod.delivery && _paymentMethod == 'COD') {
+                    if (_method == FulfillmentMethod.delivery &&
+                        _paymentMethod == 'COD') {
                       _paymentMethod = 'Transfer';
                     }
                     _updateShippingCost(); // Update ongkir saat metode berubah
@@ -217,7 +274,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 _buildDeliveryForm()
               else
                 _buildPickupForm(),
-              
+
               const SizedBox(height: 24),
               _buildPaymentMethod(),
               const SizedBox(height: 24),
@@ -230,7 +287,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: _isLoading ? null : _placeOrder,
-          child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Buat Pesanan'),
+          child:
+              _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Buat Pesanan'),
         ),
       ),
     );
@@ -241,14 +301,45 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Alamat Pengiriman', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          'Informasi & Alamat Pengiriman',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 16),
+
+        // --- INFORMASI PENGGUNA (BARU) ---
+        TextFormField(
+          controller: _nameController,
+          enabled: false, // Tidak bisa diubah
+          decoration: const InputDecoration(
+            labelText: 'Nama Penerima',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.person),
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _phoneController,
+          enabled: false, // Tidak bisa diubah
+          decoration: const InputDecoration(
+            labelText: 'Nomor Telepon',
+            border: OutlineInputBorder(),
+            prefixIcon: Icon(Icons.phone),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // --- PEMILIHAN LOKASI ---
         Card(
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () async {
               final result = await Navigator.of(context).push<LatLng>(
-                MaterialPageRoute(builder: (context) => MapPickerScreen(initialLocation: _deliveryLocation)),
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          MapPickerScreen(initialLocation: _deliveryLocation),
+                ),
               );
               if (result != null) {
                 setState(() {
@@ -264,9 +355,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const Icon(Icons.map, size: 40),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Text(_deliveryLocation == null
-                        ? 'Pilih lokasi di peta'
-                        : 'Lokasi dipilih (${_calculateDistance().toStringAsFixed(1)} km)'),
+                    child: Text(
+                      _deliveryLocation == null
+                          ? 'Pilih lokasi di peta'
+                          : 'Lokasi dipilih (${_calculateDistance().toStringAsFixed(1)} km)',
+                    ),
                   ),
                   const Icon(Icons.arrow_forward_ios),
                 ],
@@ -275,54 +368,86 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         ),
         const SizedBox(height: 16),
+
+        // --- CATATAN ALAMAT (WAJIB DIISI) ---
         TextFormField(
           controller: _addressNotesController,
-          decoration: const InputDecoration(labelText: 'Catatan Alamat (Opsional)', hintText: 'Cth: Rumah warna hijau', border: OutlineInputBorder()),
+          decoration: const InputDecoration(
+            labelText: 'Detail Alamat (Nomor Rumah, dll)',
+            hintText: 'Cth: Jl. Anggrek No. 12B, Blok C',
+            border: OutlineInputBorder(),
+          ),
           maxLines: 2,
+          // Menambahkan validator agar wajib diisi
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Detail alamat wajib diisi.';
+            }
+            return null;
+          },
         ),
       ],
     );
   }
 
   // Widget untuk form Pickup
- Widget _buildPickupForm() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      // Menggunakan Row untuk menempatkan judul dan tombol
+  Widget _buildPickupForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Menggunakan Row untuk menempatkan judul dan tombol
         Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 1. Bungkus Text dengan Expanded agar fleksibel
-          Expanded(
-            child: Text(
-              'Lokasi & Waktu Pengambilan',
-              style: Theme.of(context).textTheme.titleLarge,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // 1. Bungkus Text dengan Expanded agar fleksibel
+            Expanded(
+              child: Text(
+                'Lokasi & Waktu Pengambilan',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            // 2. Tombol akan ditempatkan di sebelah kanan tanpa mendorong teks
+            IconButton(
+              icon: Icon(
+                Icons.open_in_new_rounded,
+                color: Theme.of(context).primaryColor,
+              ),
+              tooltip: 'Buka di aplikasi peta',
+              onPressed: () => _launchMapsUrl(_storeLocation),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8), // Mengurangi jarak agar lebih rapat
+        // Peta Lokasi Toko
+        SizedBox(
+          height: 150,
+          child: AbsorbPointer(
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: _storeLocation,
+                initialZoom: 15,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _storeLocation,
+                      child: Icon(
+                        Icons.store,
+                        size: 50,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          // 2. Tombol akan ditempatkan di sebelah kanan tanpa mendorong teks
-          IconButton(
-            icon: Icon(Icons.open_in_new_rounded, color: Theme.of(context).primaryColor),
-            tooltip: 'Buka di aplikasi peta',
-            onPressed: () => _launchMapsUrl(_storeLocation),
-          ),
-        ],
-      ),
-      const SizedBox(height: 8), // Mengurangi jarak agar lebih rapat
-      // Peta Lokasi Toko
-      SizedBox(
-        height: 150,
-        child: AbsorbPointer(
-          child: FlutterMap(
-            options: MapOptions(initialCenter: _storeLocation, initialZoom: 15),
-            children: [
-              TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
-              MarkerLayer(markers: [Marker(point: _storeLocation, child: Icon(Icons.store, size: 50, color: Theme.of(context).primaryColor))]),
-            ],
-          ),
         ),
-      ),
-      const SizedBox(height: 16),
+        const SizedBox(height: 16),
         // Pemilihan Waktu
         Card(
           clipBehavior: Clip.antiAlias,
@@ -335,9 +460,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const Icon(Icons.timer, size: 40),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Text(_selectedPickupTime == null
-                        ? 'Pilih waktu pengambilan'
-                        : DateFormat('d MMM y, HH:mm', 'id_ID').format(_selectedPickupTime!)),
+                    child: Text(
+                      _selectedPickupTime == null
+                          ? 'Pilih waktu pengambilan'
+                          : DateFormat(
+                            'd MMM y, HH:mm',
+                            'id_ID',
+                          ).format(_selectedPickupTime!),
+                    ),
                   ),
                   const Icon(Icons.arrow_forward_ios),
                 ],
@@ -354,7 +484,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Metode Pembayaran', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          'Metode Pembayaran',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         RadioListTile<String>(
           title: const Text('Transfer Bank (BCA)'),
           value: 'Transfer',
@@ -378,23 +511,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ],
     );
   }
-  
+
   // Widget untuk ringkasan pesanan
   Widget _buildOrderSummary() {
     final cart = context.watch<Cart>();
-    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Ringkasan Pesanan', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          'Ringkasan Pesanan',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 10),
-        ...cart.items.map((item) => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('${item.barang.namaBarang} x${item.quantity}'),
-            Text(currencyFormatter.format(item.subtotal)),
-          ],
-        )),
+        ...cart.items.map(
+          (item) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('${item.barang.namaBarang} x${item.quantity}'),
+              Text(currencyFormatter.format(item.subtotal)),
+            ],
+          ),
+        ),
         const Divider(),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -415,14 +557,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text(currencyFormatter.format(cart.totalPrice), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.green)),
+            const Text(
+              'Total',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            Text(
+              currencyFormatter.format(cart.totalPrice),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.green,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
         TextFormField(
           controller: _orderNotesController,
-          decoration: const InputDecoration(labelText: 'Catatan Pesanan (Opsional)', border: OutlineInputBorder()),
+          decoration: const InputDecoration(
+            labelText: 'Catatan Pesanan (Opsional)',
+            border: OutlineInputBorder(),
+          ),
           maxLines: 2,
         ),
       ],

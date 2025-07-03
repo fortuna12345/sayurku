@@ -57,7 +57,9 @@ class _BarangListScreenState extends State<BarangListScreen> {
     if (_selectedCategory != 'Semua') {
       barangs =
           barangs
-              .where((barang) => barang.kategori?.namaKategori == _selectedCategory)
+              .where(
+                (barang) => barang.kategori?.namaKategori == _selectedCategory,
+              )
               .toList();
     }
 
@@ -109,12 +111,16 @@ class _BarangListScreenState extends State<BarangListScreen> {
                     onRefresh: _loadData,
                     child:
                         _filteredBarangs.isEmpty
-                            ? const Center(child: Text('Barang tidak ditemukan.'))
+                            ? const Center(
+                              child: Text('Barang tidak ditemukan.'),
+                            )
                             : ListView.builder(
                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                               itemCount: _filteredBarangs.length,
                               itemBuilder: (context, index) {
-                                return _buildNewBarangCard(_filteredBarangs[index]);
+                                return _buildNewBarangCard(
+                                  _filteredBarangs[index],
+                                );
                               },
                             ),
                   ),
@@ -191,8 +197,10 @@ class _BarangListScreenState extends State<BarangListScreen> {
       symbol: 'Rp ',
       decimalDigits: 0,
     );
+    final bool isOutOfStock = barang.stok <= 0;
 
     return Card(
+      color: isOutOfStock ? Colors.grey.shade200 : Colors.white,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       elevation: 2,
@@ -239,9 +247,11 @@ class _BarangListScreenState extends State<BarangListScreen> {
                 children: [
                   Text(
                     barang.namaBarang,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
+                      decoration:
+                          isOutOfStock ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   // const SizedBox(height: 5),
@@ -272,9 +282,31 @@ class _BarangListScreenState extends State<BarangListScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      color: Theme.of(context).primaryColor,
+                      color:
+                          isOutOfStock
+                              ? Colors.grey
+                              : Theme.of(context).primaryColor,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  if (!isOutOfStock)
+                    Text(
+                      'Sisa Stok: ${barang.stok}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  // Tampilkan label "Stok Habis"
+                  if (isOutOfStock)
+                    const Text(
+                      'Stok Habis',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -303,18 +335,53 @@ class _BarangListScreenState extends State<BarangListScreen> {
             //   child: const Text('Tambah'),
             // ),
             FloatingActionButton.small(
-              heroTag: 'add_barang_${barang.id}', // Tag unik untuk setiap tombol
-              onPressed: () {
-                cart.addItem(barang);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${barang.namaBarang} ditambahkan ke keranjang.'),
-                    duration: const Duration(seconds: 1),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              child: const Icon(Icons.add),
+              heroTag: 'add_barang_${barang.id}',
+              // Nonaktifkan tombol jika stok habis
+              onPressed:
+                  isOutOfStock
+                      ? null
+                      : () {
+                        final cart = context.read<Cart>();
+                        final itemInCart = cart.items.firstWhere(
+                          (item) => item.barang.id == barang.id,
+                          orElse:
+                              () => CartItem(
+                                barang: barang,
+                                quantity: 0,
+                              ), // Item dummy jika tidak ditemukan
+                        );
+
+                        if (itemInCart.quantity < barang.stok) {
+                          cart.addItem(barang);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${barang.namaBarang} ditambahkan ke keranjang.',
+                              ),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else {
+                          // Beri feedback jika stok di keranjang sudah maksimal
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Jumlah pesanan sudah mencapai batas stok.',
+                              ),
+                              duration: Duration(seconds: 2),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      },
+              // Ubah ikon dan warna jika stok habis
+              backgroundColor:
+                  isOutOfStock ? Colors.grey : Theme.of(context).primaryColor,
+              child:
+                  isOutOfStock
+                      ? const Icon(Icons.remove_shopping_cart)
+                      : const Icon(Icons.add),
             ),
           ],
         ),

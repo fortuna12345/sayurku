@@ -184,7 +184,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Mohon siapkan uang pas saat kurir tiba. Terima kasih!',
+                  'Mohon ambil pesanan sesuai jadwal. Terima kasih!',
                   textAlign: TextAlign.center,
                 ),
               ],

@@ -39,13 +39,19 @@ class Order {
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
+    DateTime? parseLocal(String? dateString) {
+      if (dateString == null) return null;
+      // Langsung parse, Dart akan menganggapnya sebagai waktu lokal
+      return DateTime.parse(dateString);
+    }
+
     return Order(
       id: json['id'],
       idUser: json['id_user'].toString(),
       harga: json['harga'].toDouble(),
       metodePembayaran: json['metode_pembayaran'],
       status: json['status'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: parseLocal(json['created_at'])!,
       fotoPembayaran: json['foto_pembayaran'],
       orderDetails:
           json['order_detail'] != null
@@ -58,9 +64,10 @@ class Order {
       alamatCatatan: json['catatan_alamat'],
       catatanPesanan: json['catatan_pesanan'],
       metodePengiriman: json['metode_pengiriman'],
-      waktuPickup: json['waktu_pickup'] != null
-          ? DateTime.parse(json['waktu_pickup'])
-          : null,
+      waktuPickup:
+          json['waktu_pickup'] != null
+              ? parseLocal(json['waktu_pickup'])
+              : null,
       ongkir: (json['ongkir'] as num?)?.toDouble(),
       user: json['users'] != null ? UserModel.fromJson(json['users']) : null,
     );

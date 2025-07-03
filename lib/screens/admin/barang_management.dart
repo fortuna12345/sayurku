@@ -36,7 +36,9 @@ class _BarangManagementScreenState extends State<BarangManagementScreen> {
     final bool? success = await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => BarangFormDialog(barang: barang, barangService: _barangService),
+      builder:
+          (_) =>
+              BarangFormDialog(barang: barang, barangService: _barangService),
     );
 
     if (success == true) {
@@ -169,7 +171,12 @@ class _BarangManagementScreenState extends State<BarangManagementScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${currencyFormatter.format(barang.harga)} / ${barang.satuan ?? ''}\nKategori: ${barang.kategori?.namaKategori ?? 'N/A'}',
+                      '${currencyFormatter.format(barang.harga)} / ${barang.satuan ?? ''}\n'
+                      'Kategori: ${barang.kategori?.namaKategori ?? 'N/A'}\n'
+                      'Stok: ${barang.stok}', // Tampilkan stok
+                      style: TextStyle(
+                        color: barang.stok == 0 ? Colors.red : Colors.grey,
+                      ),
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
