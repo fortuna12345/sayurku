@@ -117,7 +117,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decimalDigits: 0,
     );
     final statusHelper = OrderCard(order: _currentOrder);
-    final dateFormat = DateFormat('dd MMMM yyyy, HH:mm');
 
     return Scaffold(
       appBar: AppBar(title: Text('Detail Pesanan #${_currentOrder.id}')),
@@ -135,7 +134,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   children: [
                     _buildDetailRow(
                       'Tanggal Pesan',
-                      dateFormat.format(_currentOrder.createdAt),
+                      DateFormat(
+                        'dd MMMM yyyy, HH:mm',
+                        'id_ID',
+                      ).format(_currentOrder.createdAt),
                     ),
                     _buildDetailRow(
                       'Status',

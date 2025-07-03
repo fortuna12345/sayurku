@@ -188,12 +188,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             _method == FulfillmentMethod.delivery ? cart.shippingCost : null,
         'latitude': _deliveryLocation?.latitude,
         'longitude': _deliveryLocation?.longitude,
-        'alamat_catatan': _addressNotesController.text,
+        'catatan_alamat': _addressNotesController.text,
         'catatan_pesanan': _orderNotesController.text,
         'waktu_pickup':
             _method == FulfillmentMethod.pickup
                 ? _selectedPickupTime?.toIso8601String()
                 : null,
+        'created_at': DateTime.now().toIso8601String(),
       };
 
       final orderDetails =
