@@ -27,7 +27,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final ImagePicker _picker = ImagePicker();
 
   // Lokasi Toko (Hardcoded)
-  final LatLng _storeLocation = const LatLng(-6.201375979080287, 106.57321597183606);
+  final LatLng _storeLocation = const LatLng(
+    -6.201375979080287,
+    106.57321597183606,
+  );
 
   @override
   void initState() {
@@ -37,12 +40,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   // Fungsi helper untuk membuka URL Peta
   Future<void> _launchMapsUrl(LatLng location) async {
-    final url = 'https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}';
-    if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+    final url =
+        'https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}';
+    if (!await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    )) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tidak dapat membuka peta.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Tidak dapat membuka peta.')));
       }
     }
   }
@@ -104,13 +111,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget build(BuildContext context) {
     final authService = context.watch<AuthService>();
     final isOwner = authService.currentUser?.id == _currentOrder.idUser;
-    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     final statusHelper = OrderCard(order: _currentOrder);
+    final dateFormat = DateFormat('dd MMMM yyyy, HH:mm');
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Detail Pesanan #${_currentOrder.id}'),
-      ),
+      appBar: AppBar(title: Text('Detail Pesanan #${_currentOrder.id}')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -123,17 +133,34 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDetailRow('Tanggal Pesan', DateFormat('d MMM y, HH:mm', 'id_ID').format(_currentOrder.createdAt)),
-                    _buildDetailRow('Status', statusHelper.getStatusText(_currentOrder.status), valueColor: statusHelper.getStatusColor(_currentOrder.status)),
-                    if (_currentOrder.ongkir != null && _currentOrder.ongkir! > 0)
-                      _buildDetailRow('Ongkos Kirim', currencyFormatter.format(_currentOrder.ongkir)),
-                    _buildDetailRow('Total Pembayaran', currencyFormatter.format(_currentOrder.harga), isTotal: true),
+                    _buildDetailRow(
+                      'Tanggal Pesan',
+                      dateFormat.format(_currentOrder.createdAt),
+                    ),
+                    _buildDetailRow(
+                      'Status',
+                      statusHelper.getStatusText(_currentOrder.status),
+                      valueColor: statusHelper.getStatusColor(
+                        _currentOrder.status,
+                      ),
+                    ),
+                    if (_currentOrder.ongkir != null &&
+                        _currentOrder.ongkir! > 0)
+                      _buildDetailRow(
+                        'Ongkos Kirim',
+                        currencyFormatter.format(_currentOrder.ongkir),
+                      ),
+                    _buildDetailRow(
+                      'Total Pembayaran',
+                      currencyFormatter.format(_currentOrder.harga),
+                      isTotal: true,
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // --- Bagian Detail Item ---
             _buildOrderItemsSection(currencyFormatter),
             const SizedBox(height: 16),
@@ -153,9 +180,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   // WIDGET UNTUK DETAIL PENGIRIMAN / PENGAMBILAN
   Widget _buildFulfillmentSection(NumberFormat currencyFormatter) {
     bool isDelivery = _currentOrder.metodePengiriman == 'delivery';
-    LatLng? location = isDelivery
-        ? (_currentOrder.latitude != null ? LatLng(_currentOrder.latitude!, _currentOrder.longitude!) : null)
-        : _storeLocation;
+    LatLng? location =
+        isDelivery
+            ? (_currentOrder.latitude != null
+                ? LatLng(_currentOrder.latitude!, _currentOrder.longitude!)
+                : null)
+            : _storeLocation;
+    final dateFormat = DateFormat('dd MMMM yyyy, HH:mm');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +194,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(isDelivery ? 'Info Pengiriman' : 'Info Pengambilan', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              isDelivery ? 'Info Pengiriman' : 'Info Pengambilan',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             // TOMBOL BUKA PETA BARU
             if (location != null)
               IconButton(
@@ -180,25 +214,67 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailRow('Metode', isDelivery ? 'Pesan Antar (Delivery)' : 'Ambil di Tempat (Pickup)'),
+                _buildDetailRow(
+                  'Metode',
+                  isDelivery
+                      ? 'Pesan Antar (Delivery)'
+                      : 'Ambil di Tempat (Pickup)',
+                ),
                 const Divider(height: 24),
                 if (isDelivery) ...[
                   // --- TAMPILAN UNTUK DELIVERY ---
-                  _buildDetailRow('Nama Penerima', _currentOrder.user?.nama ?? '-'),
-                  _buildDetailRow('No. Telepon', _currentOrder.user?.no_telepon ?? '-'),
-                  if (_currentOrder.alamatCatatan != null && _currentOrder.alamatCatatan!.isNotEmpty)
-                    _buildDetailRow('Catatan Alamat', _currentOrder.alamatCatatan!),
-                  if (_currentOrder.latitude != null && _currentOrder.longitude != null) ...[
+                  _buildDetailRow(
+                    'Nama Penerima',
+                    _currentOrder.user?.nama ?? '-',
+                  ),
+                  _buildDetailRow(
+                    'No. Telepon',
+                    _currentOrder.user?.no_telepon ?? '-',
+                  ),
+                  if (_currentOrder.alamatCatatan != null &&
+                      _currentOrder.alamatCatatan!.isNotEmpty)
+                    _buildDetailRow(
+                      'Catatan Alamat',
+                      _currentOrder.alamatCatatan!,
+                    ),
+                  if (_currentOrder.latitude != null &&
+                      _currentOrder.longitude != null) ...[
                     const SizedBox(height: 16),
-                    const Text('Lokasi Pengiriman:', style: TextStyle(color: Colors.grey)),
+                    const Text(
+                      'Lokasi Pengiriman:',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 200,
                       child: FlutterMap(
-                        options: MapOptions(initialCenter: LatLng(_currentOrder.latitude!, _currentOrder.longitude!), initialZoom: 16.0),
+                        options: MapOptions(
+                          initialCenter: LatLng(
+                            _currentOrder.latitude!,
+                            _currentOrder.longitude!,
+                          ),
+                          initialZoom: 16.0,
+                        ),
                         children: [
-                          TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
-                          MarkerLayer(markers: [Marker(point: LatLng(_currentOrder.latitude!, _currentOrder.longitude!), child: const Icon(Icons.location_on, size: 50, color: Colors.red))]),
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: LatLng(
+                                  _currentOrder.latitude!,
+                                  _currentOrder.longitude!,
+                                ),
+                                child: const Icon(
+                                  Icons.location_on,
+                                  size: 50,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -206,22 +282,48 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ] else ...[
                   // --- TAMPILAN UNTUK PICKUP ---
                   if (_currentOrder.waktuPickup != null)
-                    _buildDetailRow('Waktu Pengambilan', DateFormat('d MMM y, HH:mm', 'id_ID').format(_currentOrder.waktuPickup!)),
-                  _buildDetailRow('Alamat Toko', 'Ps. Jatake, Jatake, Tangerang'),
+                    _buildDetailRow(
+                      'Waktu Pengambilan',
+                      dateFormat.format(_currentOrder.waktuPickup!),
+                    ),
+                  _buildDetailRow(
+                    'Alamat Toko',
+                    'Ps. Jatake, Jatake, Tangerang',
+                  ),
                   const SizedBox(height: 16),
-                  const Text('Lokasi Toko:', style: TextStyle(color: Colors.grey)),
+                  const Text(
+                    'Lokasi Toko:',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 200,
                     child: FlutterMap(
-                      options: MapOptions(initialCenter: _storeLocation, initialZoom: 16.0),
+                      options: MapOptions(
+                        initialCenter: _storeLocation,
+                        initialZoom: 16.0,
+                      ),
                       children: [
-                        TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
-                        MarkerLayer(markers: [Marker(point: _storeLocation, child: Icon(Icons.store, size: 50, color: Theme.of(context).primaryColor))]),
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: _storeLocation,
+                              child: Icon(
+                                Icons.store,
+                                size: 50,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                ]
+                ],
               ],
             ),
           ),
@@ -235,30 +337,43 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Barang Pesanan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Barang Pesanan',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         Card(
           child: ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _currentOrder.orderDetails?.length ?? 0,
-            separatorBuilder: (context, index) => const Divider(height: 1, indent: 16, endIndent: 16),
+            separatorBuilder:
+                (context, index) =>
+                    const Divider(height: 1, indent: 16, endIndent: 16),
             itemBuilder: (context, index) {
               final item = _currentOrder.orderDetails![index];
               return ListTile(
-                title: Text(item.barang?.namaBarang ?? 'Nama Barang Tidak Tersedia'),
-                subtitle: Text('${item.jumlah} x ${currencyFormatter.format(item.subtotal / item.jumlah)}'),
+                title: Text(
+                  item.barang?.namaBarang ?? 'Nama Barang Tidak Tersedia',
+                ),
+                subtitle: Text(
+                  '${item.jumlah} x ${currencyFormatter.format(item.subtotal / item.jumlah)}',
+                ),
                 trailing: Text(currencyFormatter.format(item.subtotal)),
               );
             },
           ),
         ),
-        if (_currentOrder.catatanPesanan != null && _currentOrder.catatanPesanan!.isNotEmpty)
+        if (_currentOrder.catatanPesanan != null &&
+            _currentOrder.catatanPesanan!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: Card(
               child: ListTile(
-                title: const Text('Catatan Pesanan', style: TextStyle(color: Colors.grey)),
+                title: const Text(
+                  'Catatan Pesanan',
+                  style: TextStyle(color: Colors.grey),
+                ),
                 subtitle: Text(_currentOrder.catatanPesanan!),
               ),
             ),
@@ -272,26 +387,43 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Info Pembayaran', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Info Pembayaran',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                _buildDetailRow('Metode Pembayaran', _currentOrder.metodePembayaran),
+                _buildDetailRow(
+                  'Metode Pembayaran',
+                  _currentOrder.metodePembayaran,
+                ),
                 const SizedBox(height: 16),
                 if (_currentOrder.fotoPembayaran != null)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Bukti Pembayaran Terunggah:', style: TextStyle(color: Colors.grey)),
+                      const Text(
+                        'Bukti Pembayaran Terunggah:',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                       const SizedBox(height: 8),
-                      Center(child: Image.network(_currentOrder.fotoPembayaran!, height: 250, fit: BoxFit.contain)),
+                      Center(
+                        child: Image.network(
+                          _currentOrder.fotoPembayaran!,
+                          height: 250,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                       const Divider(height: 24),
                     ],
                   ),
-                if (_currentOrder.status == 'pending' && isOwner && _currentOrder.metodePengiriman != 'COD')
+                if (_currentOrder.status == 'pending' &&
+                    isOwner &&
+                    _currentOrder.metodePengiriman != 'COD')
                   _buildUploadSection(),
               ],
             ),
@@ -306,43 +438,89 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Column(
       children: [
         Text(
-          _currentOrder.fotoPembayaran == null ? 'Unggah Bukti Pembayaran' : 'Edit Bukti Pembayaran',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+          _currentOrder.fotoPembayaran == null
+              ? 'Unggah Bukti Pembayaran'
+              : 'Edit Bukti Pembayaran',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).primaryColor,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
           height: 200,
           width: double.infinity,
-          decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(8)),
-          child: _proofImage != null
-              ? ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.file(_proofImage!, fit: BoxFit.contain))
-              : const Center(child: Text('Pilih gambar...', style: TextStyle(color: Colors.grey))),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade400),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child:
+              _proofImage != null
+                  ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(_proofImage!, fit: BoxFit.contain),
+                  )
+                  : const Center(
+                    child: Text(
+                      'Pilih gambar...',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
         ),
         const SizedBox(height: 12),
-        OutlinedButton.icon(onPressed: _pickImage, icon: const Icon(Icons.photo_library), label: const Text('Pilih Gambar')),
+        OutlinedButton.icon(
+          onPressed: _pickImage,
+          icon: const Icon(Icons.photo_library),
+          label: const Text('Pilih Gambar'),
+        ),
         const SizedBox(height: 12),
         ElevatedButton(
           onPressed: (_proofImage == null || _isLoading) ? null : _uploadProof,
-          style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
-          child: _isLoading ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white)) : const Text('Konfirmasi & Upload'),
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 48),
+          ),
+          child:
+              _isLoading
+                  ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(color: Colors.white),
+                  )
+                  : const Text('Konfirmasi & Upload'),
         ),
       ],
     );
   }
 
   // Helper untuk membuat baris detail
-  Widget _buildDetailRow(String label, String value, {Color? valueColor, bool isTotal = false}) {
+  Widget _buildDetailRow(
+    String label,
+    String value, {
+    Color? valueColor,
+    bool isTotal = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: isTotal ? 16 : 14)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: isTotal ? 16 : 14,
+            ),
+          ),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: TextStyle(fontWeight: FontWeight.bold, color: valueColor, fontSize: isTotal ? 18 : 14),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: valueColor,
+                fontSize: isTotal ? 18 : 14,
+              ),
             ),
           ),
         ],

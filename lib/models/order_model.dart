@@ -45,7 +45,7 @@ class Order {
       harga: json['harga'].toDouble(),
       metodePembayaran: json['metode_pembayaran'],
       status: json['status'],
-      createdAt: DateTime.parse(json['created_at']),
+      createdAt: DateTime.parse('${json['created_at']}Z').toLocal(),
       fotoPembayaran: json['foto_pembayaran'],
       orderDetails:
           json['order_detail'] != null
@@ -58,9 +58,10 @@ class Order {
       alamatCatatan: json['catatan_alamat'],
       catatanPesanan: json['catatan_pesanan'],
       metodePengiriman: json['metode_pengiriman'],
-      waktuPickup: json['waktu_pickup'] != null
-          ? DateTime.parse(json['waktu_pickup'])
-          : null,
+      waktuPickup:
+          json['waktu_pickup'] != null
+              ? DateTime.parse('${json['waktu_pickup']}Z').toLocal()
+              : null,
       ongkir: (json['ongkir'] as num?)?.toDouble(),
       user: json['users'] != null ? UserModel.fromJson(json['users']) : null,
     );
